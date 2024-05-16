@@ -19,7 +19,13 @@ namespace Assignment4_CS_GUI
 
         public void ReadFromBuffer()
         {
-            //implementera kod här
+            while (true)
+            {
+                string data = buffer.Read();
+                if (data == null)
+                    break; // Exit the loop if buffer is empty
+                outputList.Add(data); // Add the read data to the output list
+            }
         }
     }
 }

@@ -6,11 +6,25 @@ namespace Assignment4_CS_GUI
     public partial class MainForm : Form
     {
         private FileManager fileMngr = new FileManager();
+        private BoundedBuffer buffer = new BoundedBuffer(20); // Create a shared buffer with a maximum capacity of 20
+        private Modifier modifier;
+        private Reader reader;
+        private List<string> modifiedLines = new List<string>();
 
         public MainForm()
         {
             InitializeComponent();
             InitializeGUI();
+            modifier = new Modifier(buffer);
+            reader = new Reader(buffer, modifiedLines);
+
+            txtFind.TextChanged += TxtFind_TextChanged;
+        }
+
+        private void TxtFind_TextChanged(object sender, EventArgs e)
+        {
+            string findText = txtFind.Text;
+            HighlightText(findText);
         }
 
         private void InitializeGUI()
@@ -52,6 +66,7 @@ namespace Assignment4_CS_GUI
                 lstStatus.Items.Add("Lines read from the file: " + lines.Count);
             }
             else
+            
                 MessageBox.Show(errorMsg);
         }
 
@@ -59,9 +74,49 @@ namespace Assignment4_CS_GUI
         private void btnOk_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Load a textfile, select the find and replacement texts and then click me!");
+
+            string findText = txtFind.Text;
+            string replaceText = txtReplace.Text;
+
+            // Modify the text in the buffer
+            modifier.ModifyBuffer(findText, replaceText);
+
+            // Read modified text from the buffer
+            reader.ReadFromBuffer();
+
+            // Display modified text in the RichTextBox
+            rtxtDest.Clear();
+            foreach (string line in modifiedLines)
+            {
+                rtxtDest.AppendText(line + "\n");
+            }
         }
 
+        private void HighlightText(string searchText)
+        {
+            // Clear existing highlighting
+            rtxtSource.SelectAll();
+            rtxtSource.SelectionBackColor = rtxtSource.BackColor;
 
+            // Start highlighting anew
+            int startIndex = 0;
+            while (startIndex < rtxtSource.TextLength)
+            {
+                int index = rtxtSource.Find(searchText, startIndex, RichTextBoxFinds.None);
+                if (index != -1)
+                {
+                    rtxtSource.SelectionStart = index;
+                    rtxtSource.SelectionLength = searchText.Length;
+                    rtxtSource.SelectionBackColor = Color.Yellow; // You can set any color you want for highlighting
+                    startIndex = index + searchText.Length;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            rtxtSource.SelectionStart = rtxtSource.TextLength;
+        }
     }
-
 }
