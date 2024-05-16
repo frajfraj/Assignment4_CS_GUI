@@ -20,8 +20,8 @@ namespace Assignment4_CS_GUI
 
         public void Write(string data)
         {
-            lock(lockObject)
-            {
+            Monitor.TryEnter(lockObject);
+            
                 //Väntar medans buffern är full
                 while (buffer.Count >= maxsize)
                 {
@@ -29,7 +29,8 @@ namespace Assignment4_CS_GUI
                 }
                 buffer.Add(data);
                 Monitor.PulseAll(lockObject);
-            }
+
+            Monitor.Exit(lockObject);
         }
 
         public string Read()
