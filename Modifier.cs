@@ -16,9 +16,23 @@ namespace Assignment4_CS_GUI
             this.buffer = buffer;
         }
 
-        public void ModifyBuffer()
+        public void ModifyBuffer(string findText, string replaceText)
         {
-            // implementera kod
+            while (true)
+            {
+                string data = buffer.Read();
+                if (data == null)
+                    break; // går ur loopen om buffern är tom
+                string modifiedData = ModifyData(data, findText, replaceText);
+                buffer.Write(modifiedData); // skriver in den nya datan
+            }
+        }
+
+        private string ModifyData(string data, string findText, string replaceText)
+        {
+            // hittar och ersätter. Retunerar den modifierade datan
+            string modifiedData = data.Replace(findText, replaceText);
+            return modifiedData;
         }
     }
 }

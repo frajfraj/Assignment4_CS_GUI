@@ -22,7 +22,7 @@ namespace Assignment4_CS_GUI
         {
             Monitor.TryEnter(lockObject);
             
-                //Väntar medans buffern är full
+                //Väntar medan buffern är full
                 while (buffer.Count >= maxsize)
                 {
                     Monitor.Wait(lockObject);
