@@ -9,22 +9,27 @@ namespace Assignment4_CS_GUI
     internal class Reader
     {
         private BoundedBuffer buffer;
-        private List<string> outputList;
+        private RichTextBox rtxtDest;
+        private ListBox lstStatus;
 
-        public Reader(BoundedBuffer buffer, List<string> outputList)
+        public Reader(BoundedBuffer buffer, RichTextBox rtxtDest, ListBox lstStatus)
         {
             this.buffer = buffer;
-            this.outputList = outputList;
+            this.rtxtDest = rtxtDest;
+            this.lstStatus = lstStatus;
         }
 
-        public void ReadFromBuffer()
+        public void Read()
         {
             while (true)
             {
                 string data = buffer.Read();
-                if (data == null)
-                    break; // Exit the loop if buffer is empty
-                outputList.Add(data); // Add the read data to the output list
+                rtxtDest.Invoke((MethodInvoker)delegate {
+                    rtxtDest.AppendText(data + "\n");
+                });
+                lstStatus.Invoke((MethodInvoker)delegate {
+                    lstStatus.Items.Add("Reader read a line.");
+                });
             }
         }
     }
