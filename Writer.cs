@@ -13,7 +13,7 @@ namespace Assignment4_CS_GUI
         private ListBox lstStatus;
         private int id;
 
-        ListBox lstStatus;
+        
         public int writerIndex;
         Random random = new Random();
         public bool isWriting = false;

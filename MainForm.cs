@@ -110,7 +110,7 @@ namespace Assignment4_CS_GUI
             }
 
             reader = new Reader(buffer, lines ,rtxtDest, lstStatus);
-            readerThread = new Thread(reader.ReadFromBuffer);
+            readerThread = new Thread(reader.Read);
             reader.isRunning = true;
             readerThread.Start();
 
