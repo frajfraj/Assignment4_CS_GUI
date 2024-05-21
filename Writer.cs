@@ -11,18 +11,44 @@ namespace Assignment4_CS_GUI
         private BoundedBuffer buffer;
         private List<string> lines;
 
-        public Writer(BoundedBuffer buffer, List<string> lines)
+        ListBox lstStatus;
+        public int writerIndex;
+        Random random = new Random();
+        public bool isWriting = false;
+        public static int writerCounter = 0;
+        
+
+        public Writer(BoundedBuffer buffer, List<string> lines, ListBox lstStatus, int writerIndex)
         {
             this.buffer = buffer;
             this.lines = lines;
+            this.writerIndex = writerIndex;
+            this.lstStatus = lstStatus;
+
+
         }
+
 
         public void WriteToBuffer()
         {
-            foreach (string line in lines)
             {
-                buffer.Write(line);
+                while (isWriting && writerCounter < lines.Count)
+                {
+                    Thread.Sleep(random.Next(1000, 2000));
+                    if (writerCounter < lines.Count)
+                    {
+                        buffer.Write(lines[writerCounter]);
+                        writerCounter++;
+                    }
+                    lstStatus.Invoke((MethodInvoker)delegate {
+                        lstStatus.Items.Add($"Writer {writerIndex} wrote a line.");
+                    });
+
+                }
+                isWriting = false;
             }
+
         }
+
     }
 }

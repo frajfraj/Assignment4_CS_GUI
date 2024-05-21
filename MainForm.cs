@@ -7,16 +7,21 @@ namespace Assignment4_CS_GUI
     {
         private FileManager fileMngr = new FileManager();
         private BoundedBuffer buffer = new BoundedBuffer(20); // Create a shared buffer with a maximum capacity of 20
-        private Modifier modifier;
+        
+        private List<string> lines = new List<string>();
+
+        private Writer[] writers = new Writer[3];
+        private Modifier[] modifiers = new Modifier[4];
         private Reader reader;
-        private List<string> modifiedLines = new List<string>();
+
+        private Thread[] writerThreads = new Thread[3];
+        private Thread[] modifierThreads = new Thread[4];
+        private Thread readerThread;
 
         public MainForm()
         {
             InitializeComponent();
             InitializeGUI();
-            modifier = new Modifier(buffer);
-            reader = new Reader(buffer, modifiedLines);
 
             txtFind.TextChanged += TxtFind_TextChanged;
         }
@@ -49,7 +54,7 @@ namespace Assignment4_CS_GUI
             }
 
         }
-        List<string> lines;
+        
         private void readDataFromTextFile(string fileName)
         {
             rtxtSource.Clear();
@@ -73,24 +78,47 @@ namespace Assignment4_CS_GUI
 
         private void btnOk_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Load a textfile, select the find and replacement texts and then click me!");
+            if (lines == null || lines.Count == 0)
+            {
+                MessageBox.Show("Please load a text file first!");
+                return;
+            }
 
             string findText = txtFind.Text;
             string replaceText = txtReplace.Text;
 
-            // Modify the text in the buffer
-            modifier.ModifyBuffer(findText, replaceText);
-
-            // Read modified text from the buffer
-            reader.ReadFromBuffer();
-
-            // Display modified text in the RichTextBox
+            // Clear previous status and destination content
+            lstStatus.Items.Clear();
             rtxtDest.Clear();
-            foreach (string line in modifiedLines)
+
+            
+
+            for (int i = 0; i < writers.Length; i++)
             {
-                rtxtDest.AppendText(line + "\n");
+                writers[i] = new Writer(buffer, lines, lstStatus, i);
+                writerThreads[i] = new Thread(writers[i].WriteToBuffer);
+                writers[i].isWriting = true;
+                writerThreads[i].Start();
             }
+
+            for (int i = 0; i < modifiers.Length; i++)
+            {
+                modifiers[i] = new Modifier(buffer, findText, replaceText, lstStatus, i);
+                modifierThreads[i] = new Thread(modifiers[i].ModifyBuffer);
+                modifiers[i].isRunning = true;
+                modifierThreads[i].Start();
+            }
+
+            reader = new Reader(buffer, lines ,rtxtDest, lstStatus);
+            readerThread = new Thread(reader.ReadFromBuffer);
+            reader.isRunning = true;
+            readerThread.Start();
+
+           
         }
+
+
+
 
         private void HighlightText(string searchText)
         {

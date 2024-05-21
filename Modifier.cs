@@ -10,29 +10,32 @@ namespace Assignment4_CS_GUI
     internal class Modifier
     {
         private BoundedBuffer buffer;
+        private string findText, replaceText, name;
+        private ListBox lstStatus;
+        public bool isRunning = false;
 
-        public Modifier(BoundedBuffer buffer) 
-        { 
+        public Modifier(BoundedBuffer buffer, string findText, string replaceText, ListBox lstStatus, int id)
+        {
             this.buffer = buffer;
+            this.findText = findText;
+            this.replaceText = replaceText;
+            this.lstStatus = lstStatus;
+            name = $"Modifier {id}";
         }
 
-        public void ModifyBuffer(string findText, string replaceText)
+        public void ModifyBuffer()
         {
-            while (true)
+            while (isRunning)
             {
-                string data = buffer.Read();
-                if (data == null)
-                    break; // går ur loopen om buffern är tom
-                string modifiedData = ModifyData(data, findText, replaceText);
-                buffer.Write(modifiedData); // skriver in den nya datan
+                buffer.Modify(findText, replaceText);
+                lstStatus.Invoke((MethodInvoker)delegate {
+                    lstStatus.Items.Add($"{name} modified a line.");
+                });
+
+                Thread.Sleep(1000);
             }
+            isRunning = false;
         }
 
-        private string ModifyData(string data, string findText, string replaceText)
-        {
-            // hittar och ersätter. Retunerar den modifierade datan
-            string modifiedData = data.Replace(findText, replaceText);
-            return modifiedData;
-        }
     }
 }

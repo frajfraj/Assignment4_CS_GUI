@@ -10,22 +10,36 @@ namespace Assignment4_CS_GUI
     {
         private BoundedBuffer buffer;
         private List<string> outputList;
+        RichTextBox rtxtDest;
+        ListBox lstStatus;
+        public bool isRunning = false;
 
-        public Reader(BoundedBuffer buffer, List<string> outputList)
+        public Reader(BoundedBuffer buffer, List<string> outputList, RichTextBox rtxtDest, ListBox lstStatus)
         {
             this.buffer = buffer;
             this.outputList = outputList;
+            this.rtxtDest = rtxtDest;
+            this.lstStatus = lstStatus;
         }
 
         public void ReadFromBuffer()
         {
-            while (true)
+         
+            while (isRunning)
             {
-                string data = buffer.Read();
-                if (data == null)
-                    break; // Exit the loop if buffer is empty
-                outputList.Add(data); // Add the read data to the output list
+                string line = buffer.Read();
+                if (line == null) break; // Adjust logic to stop reading as needed
+
+                rtxtDest.Invoke((MethodInvoker)delegate {
+                    rtxtDest.AppendText(line + Environment.NewLine);
+                });
+
+                lstStatus.Invoke((MethodInvoker)delegate {
+                    lstStatus.Items.Add("Reader read a line.");
+                });
+                
             }
+            isRunning = false;
         }
     }
 }

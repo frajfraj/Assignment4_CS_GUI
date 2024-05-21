@@ -8,44 +8,70 @@ namespace Assignment4_CS_GUI
 {
     internal class BoundedBuffer
     {
-        private List<string> buffer;
-        private int maxsize;
-        private object lockObject = new object();
+        private readonly string[] buffer;
+        private readonly BufferStatus[] status;
+        private int writePos = 0;
+        private int readPos = 0;
+        private int modifyPos = 0;
 
-        public BoundedBuffer(int maxsize)
+        private readonly object lockObject = new object();
+
+        public BoundedBuffer(int capacity)
         {
-            this.maxsize = maxsize;
-            buffer = new List<string>();
+            buffer = new string[capacity];
+            status = new BufferStatus[capacity];
+            for (int i = 0; i < capacity; i++)
+            {
+                status[i] = BufferStatus.Empty;
+            }
         }
 
         public void Write(string data)
         {
-            Monitor.TryEnter(lockObject);
-            
-                //Väntar medan buffern är full
-                while (buffer.Count >= maxsize)
+            lock (lockObject)
+            {
+                while (status[writePos] != BufferStatus.Empty)
                 {
                     Monitor.Wait(lockObject);
                 }
-                buffer.Add(data);
-                Monitor.PulseAll(lockObject);
 
-            Monitor.Exit(lockObject);
+                buffer[writePos] = data;
+                status[writePos] = BufferStatus.New;
+                writePos = (writePos + 1) % buffer.Length;
+                Monitor.PulseAll(lockObject);
+            }
+        }
+
+        public void Modify(string searchString, string replacementString)
+        {
+            lock (lockObject)
+            {
+                while (status[modifyPos] != BufferStatus.New)
+                {
+                    Monitor.Wait(lockObject);
+                }
+
+                buffer[modifyPos] = buffer[modifyPos].Replace(searchString, replacementString);
+                status[modifyPos] = BufferStatus.Checked;
+                modifyPos = (modifyPos + 1) % buffer.Length;
+                Monitor.PulseAll(lockObject);
+            }
         }
 
         public string Read()
         {
             lock (lockObject)
             {
-                //Väntar medans buffern är tom
-                while (buffer.Count == 0)
+                while (status[readPos] != BufferStatus.Checked)
                 {
                     Monitor.Wait(lockObject);
                 }
 
-                string data = buffer[0];
-                buffer.RemoveAt(0);
+                string data = buffer[readPos];
+                status[readPos] = BufferStatus.Empty;
+                readPos = (readPos + 1) % buffer.Length;
                 Monitor.PulseAll(lockObject);
+
                 return data;
             }
         }
