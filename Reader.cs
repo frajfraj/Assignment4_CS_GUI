@@ -22,7 +22,7 @@ namespace Assignment4_CS_GUI
             this.lstStatus = lstStatus;
         }
 
-        public void ReadFromBuffer()
+        public void Read()
         {
          
             while (isRunning)

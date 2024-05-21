@@ -10,6 +10,8 @@ namespace Assignment4_CS_GUI
     {
         private BoundedBuffer buffer;
         private List<string> lines;
+        private ListBox lstStatus;
+        private int id;
 
         ListBox lstStatus;
         public int writerIndex;
