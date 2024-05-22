@@ -6,7 +6,7 @@ namespace Assignment4_CS_GUI
     public partial class MainForm : Form
     {
         private FileManager fileMngr = new FileManager();
-        private BoundedBuffer buffer = new BoundedBuffer(20); // Create a shared buffer with a maximum capacity of 20
+        private BoundedBuffer buffer; // Create a shared buffer with a maximum capacity of 20
         
         private List<string> lines = new List<string>();
 
@@ -84,20 +84,20 @@ namespace Assignment4_CS_GUI
                 return;
             }
 
-            string findText = txtFind.Text;
-            string replaceText = txtReplace.Text;
-
             // Clear previous status and destination content
             lstStatus.Items.Clear();
             rtxtDest.Clear();
+            buffer = new BoundedBuffer(20);
 
-            
+            string findText = txtFind.Text;
+            string replaceText = txtReplace.Text;
+
 
             for (int i = 0; i < writers.Length; i++)
             {
                 writers[i] = new Writer(buffer, lines, lstStatus, i);
                 writerThreads[i] = new Thread(writers[i].WriteToBuffer);
-                writers[i].isWriting = true;
+                writers[i].isRunning = true;
                 writerThreads[i].Start();
             }
 
@@ -109,15 +109,36 @@ namespace Assignment4_CS_GUI
                 modifierThreads[i].Start();
             }
 
-            reader = new Reader(buffer, lines ,rtxtDest, lstStatus);
+            reader = new Reader(buffer, lines, rtxtDest, lstStatus);
             readerThread = new Thread(reader.Read);
             reader.isRunning = true;
             readerThread.Start();
 
-           
+            Thread monitorThread = new Thread(new ThreadStart(MonitorCompletion));
+            monitorThread.Start();
+
         }
 
+        private void MonitorCompletion()
+        {
+            // Wait for writers to finish
+            foreach (Thread writerThread in writerThreads)
+            {
+                writerThread.Join();
+            }
 
+            // Signal modifiers to stop once all writers are done
+            foreach (Modifier modifier in modifiers)
+            {
+                modifier.isRunning = false;
+            }
+
+            reader.isRunning = false;
+
+            lstStatus.Invoke((MethodInvoker)delegate {
+                lstStatus.Items.Add("All processing complete.");
+            });
+        }
 
 
         private void HighlightText(string searchText)

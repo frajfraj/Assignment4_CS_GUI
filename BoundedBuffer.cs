@@ -13,6 +13,7 @@ namespace Assignment4_CS_GUI
         private int writePos = 0;
         private int readPos = 0;
         private int modifyPos = 0;
+        private int writerIndex;
 
         private readonly object lockObject = new object();
 
@@ -26,7 +27,7 @@ namespace Assignment4_CS_GUI
             }
         }
 
-        public void Write(string data)
+        public bool Write(List<string> data)
         {
             lock (lockObject)
             {
@@ -35,10 +36,16 @@ namespace Assignment4_CS_GUI
                     Monitor.Wait(lockObject);
                 }
 
-                buffer[writePos] = data;
+                if (writerIndex >= data.Count)
+                    return false;
+
+                buffer[writePos] = data[writerIndex];
+                writerIndex++;
+
                 status[writePos] = BufferStatus.New;
                 writePos = (writePos + 1) % buffer.Length;
                 Monitor.PulseAll(lockObject);
+                return true;
             }
         }
 

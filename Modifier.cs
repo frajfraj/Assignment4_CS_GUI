@@ -12,7 +12,7 @@ namespace Assignment4_CS_GUI
         private BoundedBuffer buffer;
         private string findText, replaceText, name;
         private ListBox lstStatus;
-        public bool isRunning = false;
+        public bool isRunning {  get; set; }
 
         public Modifier(BoundedBuffer buffer, string findText, string replaceText, ListBox lstStatus, int id)
         {

@@ -12,7 +12,7 @@ namespace Assignment4_CS_GUI
         private List<string> outputList;
         RichTextBox rtxtDest;
         ListBox lstStatus;
-        public bool isRunning = false;
+        public bool isRunning { get; set; }
 
         public Reader(BoundedBuffer buffer, List<string> outputList, RichTextBox rtxtDest, ListBox lstStatus)
         {
